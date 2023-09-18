@@ -6,17 +6,19 @@ import WebViewInjectedJs from "./WebViewInjectedJs";
 import WebViewInjectedJsBeforeContentLoad from "./WebViewInjectedJsBeforeContentLoad";
 import WbViewInjectedJsObj from "./WbViewInjectedJsObj";
 import WebViewEvents from "./WebViewEvents";
+import WebViewSourceListener from "./WebViewSourceListener";
 
 export default function App() {
   return (
     <View style={styles.container}>
       <StatusBar />
-      <WebViewSourceURL />
+      {/* <WebViewSourceURL /> */}
       {/* <WebViewStaticHTML /> */}
       {/* <WebViewInjectedJs /> */}
       {/* <WebViewInjectedJsBeforeContentLoad /> */}
       {/* <WbViewInjectedJsObj /> */}
       {/* <WebViewEvents /> */}
+      <WebViewSourceListener />
     </View>
   );
 }
