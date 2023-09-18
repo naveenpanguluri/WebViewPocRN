@@ -112,11 +112,11 @@ export default function WebViewSourceListener() {
           setLoaded(true);
           setFallbackPageLoad(true);
           setApiActivity((prev) => [
-            {
-              type: "PAGE_LOAD_FALLBACK",
-              message: "Page started loading (fallback)",
-              url: "https://www.apollo.com/",
-            },
+            // {
+            //   type: "PAGE_LOAD_FALLBACK",
+            //   message: "Page started loading (fallback)",
+            //   url: "https://www.apollo.com/",
+            // },
             ...prev,
           ]);
         }}
