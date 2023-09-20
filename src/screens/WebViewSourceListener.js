@@ -149,6 +149,10 @@ export default function WebViewSourceListener() {
       color: "white",
       textAlign: "center",
     },
+    directionLabel: {
+      color: "#888",
+      fontSize: 12,
+    },
   });
 
   const toggleExpanded = (index) => {
@@ -198,7 +202,6 @@ export default function WebViewSourceListener() {
       <Text style={styles.listener}>{"ACTIVITY LISTENER:"}</Text>
       <FlatList
         style={styles.scrollView}
-
         data={apiActivity.slice().reverse()}
         keyExtractor={(item, index) => `${item.type}_${index}`}
         renderItem={({ item, index }) => (
@@ -213,6 +216,21 @@ export default function WebViewSourceListener() {
               ]}
             >
               {item.type}
+              <Text style={styles.directionLabel}>
+                {[
+                  "PAGE_LOAD",
+                  "API_RESPONSE",
+                  "XHR_RESPONSE",
+                  "JQUERY_AJAX_RESPONSE",
+                  "API_RESPONSE",
+                ].includes(item.type)
+                  ? " Inbound"
+                  : ["API_CALL", "SEND_BEACON", "JQUERY_AJAX_CALL"].includes(
+                      item.type
+                    )
+                  ? " Outbound"
+                  : ""}
+              </Text>
             </Text>
             {expandedIndex === index && item.type !== "CLICK_EVENT" && (
               <Text style={[styles.activityText]}>
