@@ -83,16 +83,26 @@ export default function WebViewSourceListener() {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'API_RESPONSE', url: input, message: 'API response error', error: error.message }));
           });
       };
+
+      function debounce(fn, delay) {
+        let timer;
+        return function(...args) {
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            fn(...args);
+          }, delay);
+        };
+      }      
         
-      document.addEventListener('click', function(e) {
+      document.addEventListener('click', debounce(function(e) {
+        e.stopPropagation();  // Stop the event from bubbling up
         let data = { type: 'CLICK_EVENT', target: e.target.tagName };
         [...e.target.attributes].forEach(attr => {
           data[attr.name] = attr.value;
         });
       
         window.ReactNativeWebView.postMessage(JSON.stringify(data));
-      }, false);
-
+      }, 500), false);
         
       // Overriding navigator.sendBeacon to intercept data
       var originalSendBeacon = navigator.sendBeacon;
@@ -140,6 +150,9 @@ export default function WebViewSourceListener() {
     activityText: {
       marginVertical: 4,
     },
+    activityHeader: {
+      textAlign: "center",
+    },
     alternateBackground: {
       backgroundColor: "#F5F5DC",
     },
@@ -149,11 +162,13 @@ export default function WebViewSourceListener() {
     listener: {
       backgroundColor: "blue",
       color: "white",
+      textAlign: "center"
     },
     loading: {
       backgroundColor: "blue",
       color: "white",
-    },
+      textAlign: "center"
+    }
   });
 
   const toggleExpanded = (index) => {
@@ -212,13 +227,14 @@ export default function WebViewSourceListener() {
             <TouchableOpacity key={index} onPress={() => toggleExpanded(index)}>
               <Text
                 style={[
+                  styles.activityHeader,
                   styles.activityText,
                   index % 2 === 1
                     ? styles.alternateBackground
                     : styles.lineItemBackground,
                 ]}
               >
-                Type: {activity.type}
+                {activity.type}
               </Text>
               {expandedIndex === index && activity.type !== "CLICK_EVENT" && (
                 <Text style={[styles.activityText]}>
