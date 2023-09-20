@@ -1,39 +1,19 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   SafeAreaView,
   StyleSheet,
   Text,
   ScrollView,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { ActivityIndicator } from "react-native";
 
 export default function WebViewSourceListener() {
   const [loaded, setLoaded] = useState(false);
-  const [fallbackPageLoad, setFallbackPageLoad] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [apiActivity, setApiActivity] = useState([]);
-  const apiActivityBatch = useRef([]);
-
-  useEffect(() => {
-    let lastAddedIndex = -1;
-
-    const intervalId = setInterval(() => {
-      if (
-        apiActivityBatch.current.length > 0 &&
-        lastAddedIndex !== apiActivityBatch.current.length - 1
-      ) {
-        console.log("API BATCH: ", apiActivityBatch.current[0]);
-
-        setApiActivity((prev) => [...prev, ...apiActivityBatch.current]);
-        lastAddedIndex = apiActivityBatch.current.length - 1;
-        apiActivityBatch.current = [];
-      }
-    }, 100);
-
-    return () => clearInterval(intervalId);
-  }, [apiActivityBatch.current]);
 
   const webViewRef = useRef();
 
@@ -162,13 +142,13 @@ export default function WebViewSourceListener() {
     listener: {
       backgroundColor: "blue",
       color: "white",
-      textAlign: "center"
+      textAlign: "center",
     },
     loading: {
       backgroundColor: "blue",
       color: "white",
-      textAlign: "center"
-    }
+      textAlign: "center",
+    },
   });
 
   const toggleExpanded = (index) => {
@@ -177,7 +157,6 @@ export default function WebViewSourceListener() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {loaded ? <ActivityIndicator /> : null}
       <WebView
         ref={webViewRef}
         originWhitelist={["*"]}
@@ -199,7 +178,6 @@ export default function WebViewSourceListener() {
         onLoadStart={() => setLoaded(false)}
         onLoad={() => {
           setLoaded(true);
-          setFallbackPageLoad(true);
           setApiActivity((prev) => [...prev]);
         }}
         onMessage={(event) => {
@@ -207,10 +185,9 @@ export default function WebViewSourceListener() {
             const data = JSON.parse(event.nativeEvent.data);
 
             if (data.type === "PAGE_LOAD") {
-              setFallbackPageLoad(false);
               setApiActivity((prev) => prev.filter((_, index) => index !== 0));
             } else {
-              apiActivityBatch.current.push(data);
+              setApiActivity((prev) => [...prev, data]);
             }
           } catch (error) {
             console.error("Failed to parse message event data:", error);
@@ -219,68 +196,68 @@ export default function WebViewSourceListener() {
         style={styles.webView}
       />
       <Text style={styles.listener}>{"ACTIVITY LISTENER:"}</Text>
-      <ScrollView style={styles.scrollView}>
-        {apiActivity
-          .slice()
-          .reverse()
-          .map((activity, index) => (
-            <TouchableOpacity key={index} onPress={() => toggleExpanded(index)}>
-              <Text
-                style={[
-                  styles.activityHeader,
-                  styles.activityText,
-                  index % 2 === 1
-                    ? styles.alternateBackground
-                    : styles.lineItemBackground,
-                ]}
-              >
-                {activity.type}
+      <FlatList
+        style={styles.scrollView}
+
+        data={apiActivity.slice().reverse()}
+        keyExtractor={(item, index) => `${item.type}_${index}`}
+        renderItem={({ item, index }) => (
+          <TouchableOpacity onPress={() => toggleExpanded(index)}>
+            <Text
+              style={[
+                styles.activityHeader,
+                styles.activityText,
+                index % 2 === 1
+                  ? styles.alternateBackground
+                  : styles.lineItemBackground,
+              ]}
+            >
+              {item.type}
+            </Text>
+            {expandedIndex === index && item.type !== "CLICK_EVENT" && (
+              <Text style={[styles.activityText]}>
+                URL: {item.url || "N/A"}
+                {"\n"}
+                Message: {item.message}
+                {"\n"}
+                Payload: {JSON.stringify(item.payload) || "N/A"}
+                {"\n"}
+                Response Type: {item.responseType || "N/A"}
+                {"\n"}
+                Response Keys: {JSON.stringify(item.responseKeys) || "N/A"}
+                {"\n"}
+                Error: {JSON.stringify(item.error) || "N/A"}
+                {"\n"}
+                Method: {item?.method || "N/A"}
+                {"\n"}
+                Headers: {item?.headers || "N/A"}
               </Text>
-              {expandedIndex === index && activity.type !== "CLICK_EVENT" && (
-                <Text style={[styles.activityText]}>
-                  URL: {activity.url || "N/A"}
-                  {"\n"}
-                  Message: {activity.message}
-                  {"\n"}
-                  Payload: {JSON.stringify(activity.payload) || "N/A"}
-                  {"\n"}
-                  Response Type: {activity.responseType || "N/A"}
-                  {"\n"}
-                  Response Keys:{" "}
-                  {JSON.stringify(activity.responseKeys) || "N/A"}
-                  {"\n"}
-                  Error: {JSON.stringify(activity.error) || "N/A"}
-                  {"\n"}
-                  Method: {activity?.method || "N/A"}
-                  {"\n"}
-                  Headers: {activity?.headers || "N/A"}
-                </Text>
-              )}
-              {expandedIndex === index && activity.type === "CLICK_EVENT" && (
-                <Text style={[styles.activityText]}>
-                  target: {activity.target || "N/A"}
-                  {"\n"}
-                  id: {activity?.id || "N/A"}
-                  {"\n"}
-                  href: {activity?.href || "N/A"}
-                  {"\n"}
-                  role: {activity?.role || "N/A"}
-                  {"\n"}
-                  alt: {activity?.alt || "N/A"}
-                  {"\n"}
-                  src: {activity?.src || "N/A"}
-                  {"\n"}
-                  height: {activity?.height || "N/A"}
-                  {"\n"}
-                  width: {activity?.width || "N/A"}
-                  {"\n"}
-                </Text>
-              )}
-            </TouchableOpacity>
-          ))}
-      </ScrollView>
+            )}
+            {expandedIndex === index && item.type === "CLICK_EVENT" && (
+              <Text style={[styles.activityText]}>
+                target: {item.target || "N/A"}
+                {"\n"}
+                id: {item?.id || "N/A"}
+                {"\n"}
+                href: {item?.href || "N/A"}
+                {"\n"}
+                role: {item?.role || "N/A"}
+                {"\n"}
+                alt: {item?.alt || "N/A"}
+                {"\n"}
+                src: {item?.src || "N/A"}
+                {"\n"}
+                height: {item?.height || "N/A"}
+                {"\n"}
+                width: {item?.width || "N/A"}
+                {"\n"}
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
+      />
       <Text style={styles.loading}>
-        <Text>{loaded ? "loaded" : "loading"}</Text>
+        {loaded ? <Text>loaded</Text> : <ActivityIndicator />}
       </Text>
     </SafeAreaView>
   );
