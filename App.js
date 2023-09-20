@@ -6,6 +6,7 @@ import Home from "./src/screens/RootScreen";
 import WebToNative from "./src/screens/WebToNative";
 import NativeToWeb from "./src/screens/NativeToWeb";
 import WebViewUI from "./src/screens/WebView";
+import WebViewSourceListener from "./src/screens/WebViewSourceListener";
 
 // import WebViewSourceURL from "./src/screens/WebViewSourceURL";
 // import WebViewStaticHTML from "./src/screens/WebViewStaticHTML";
@@ -54,6 +55,14 @@ export default function App() {
             options={{
               headerTintColor: "green",
               title: "NativeToWeb",
+            }}
+          />
+          <Stack.Screen
+            name="WebViewSourceListener"
+            component={WebViewSourceListener}
+            options={{
+              headerTintColor: "green",
+              title: "WebViewSourceListener",
             }}
           />
         </Stack.Navigator>
